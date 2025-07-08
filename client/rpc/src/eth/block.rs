@@ -58,6 +58,16 @@ where
 		} = self.block_info_by_eth_block_hash(hash).await?;
 
 		let runtime = self.client.runtime_api();
+
+		let current_epoch = runtime
+			.current_epoch(substrate_hash)
+			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?;
+		log::info!(
+			"Current epoch for block {} is {:?}",
+			substrate_hash,
+			current_epoch
+		);
+
 		let babe_config = runtime
 			.configuration(substrate_hash)
 			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?;
@@ -112,6 +122,16 @@ where
 					.map_err(|_| internal_err(format!("Expect block number from id: {}", id)))?;
 
 				let runtime = self.client.runtime_api();
+
+				let current_epoch = runtime.current_epoch(substrate_hash).map_err(|_| {
+					internal_err(format!("Runtime access error at {}", substrate_hash))
+				})?;
+				log::info!(
+					"Current epoch for block {} is {:?}",
+					substrate_hash,
+					current_epoch
+				);
+
 				let babe_config = runtime.configuration(substrate_hash).map_err(|_| {
 					internal_err(format!("Runtime access error at {}", substrate_hash))
 				})?;

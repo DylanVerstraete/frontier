@@ -28,6 +28,7 @@ use sc_transaction_pool::ChainApi;
 use sp_api::{ApiExt, CallApiAt, CallApiAtParams, CallContext, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder as BlockBuilderApi;
 use sp_blockchain::HeaderBackend;
+use sp_consensus_babe::BabeApi;
 use sp_externalities::Extensions;
 use sp_inherents::CreateInherentDataProviders;
 use sp_io::hashing::{blake2_128, twox_128};
@@ -69,7 +70,7 @@ impl<B, C, P, CT, BE, A, CIDP, EC> Eth<B, C, P, CT, BE, A, CIDP, EC>
 where
 	B: BlockT,
 	C: CallApiAt<B> + ProvideRuntimeApi<B>,
-	C::Api: BlockBuilderApi<B> + EthereumRuntimeRPCApi<B>,
+	C::Api: BlockBuilderApi<B> + EthereumRuntimeRPCApi<B> + BabeApi<B>,
 	C: HeaderBackend<B> + StorageProvider<B, BE> + 'static,
 	BE: Backend<B> + 'static,
 	A: ChainApi<Block = B>,
