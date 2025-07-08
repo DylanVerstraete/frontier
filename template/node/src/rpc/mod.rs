@@ -69,6 +69,7 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<B, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<B>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<B>,
+	C::Api: fp_rpc::RandomnessRuntimeApi<B>,
 	C: HeaderBackend<B> + HeaderMetadata<B, Error = BlockChainError> + 'static,
 	C: BlockchainEvents<B> + AuxStore + UsageProvider<B> + StorageProvider<B, BE>,
 	BE: Backend<B> + 'static,

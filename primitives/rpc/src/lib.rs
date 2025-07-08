@@ -270,6 +270,12 @@ sp_api::decl_runtime_apis! {
 		#[changed_in(2)]
 		fn convert_transaction(transaction: ethereum::TransactionV0) -> <Block as BlockT>::Extrinsic;
 	}
+
+	#[api_version(1)]
+	pub trait RandomnessRuntimeApi {
+		/// Returns the current randomness.
+		fn randomness() -> Option<[u8; 32]>;
+	}
 }
 
 /// Fallback transaction converter when the `ConvertTransactionRuntimeApi` is not available. For almost all

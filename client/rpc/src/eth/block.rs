@@ -26,12 +26,11 @@ use sc_transaction_pool::ChainApi;
 use sc_transaction_pool_api::InPoolTransaction;
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
-use sp_consensus_babe::BabeApi;
 use sp_core::hashing::keccak_256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
 use fc_rpc_core::types::*;
-use fp_rpc::EthereumRuntimeRPCApi;
+use fp_rpc::{EthereumRuntimeRPCApi, RandomnessRuntimeApi};
 
 use crate::{
 	eth::{rich_block_build, BlockInfo, Eth},
@@ -43,7 +42,7 @@ where
 	B: BlockT,
 	C: ProvideRuntimeApi<B>,
 	C::Api: EthereumRuntimeRPCApi<B>,
-	C::Api: BabeApi<B>,
+	C::Api: RandomnessRuntimeApi<B>,
 	C: HeaderBackend<B> + StorageProvider<B, BE> + 'static,
 	BE: Backend<B> + 'static,
 	A: ChainApi<Block = B>,
@@ -59,18 +58,15 @@ where
 
 		let runtime = self.client.runtime_api();
 
-		let current_epoch = runtime
-			.current_epoch(substrate_hash)
-			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?;
+		let randomness = runtime
+			.randomness(substrate_hash)
+			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?
+			.unwrap_or_default();
 		log::info!(
-			"Current epoch for block {} is {:?}",
+			"Randomness for block {}: {:?}",
 			substrate_hash,
-			current_epoch
+			H256(randomness)
 		);
-
-		let babe_config = runtime
-			.configuration(substrate_hash)
-			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?;
 
 		match (block, statuses) {
 			(Some(block), Some(statuses)) => {
@@ -81,7 +77,7 @@ where
 					full,
 					Some(base_fee),
 					false,
-					H256(babe_config.randomness),
+					H256(randomness),
 				);
 
 				let substrate_hash = H256::from_slice(substrate_hash.as_ref());
@@ -123,18 +119,17 @@ where
 
 				let runtime = self.client.runtime_api();
 
-				let current_epoch = runtime.current_epoch(substrate_hash).map_err(|_| {
-					internal_err(format!("Runtime access error at {}", substrate_hash))
-				})?;
+				let randomness = runtime
+					.randomness(substrate_hash)
+					.map_err(|_| {
+						internal_err(format!("Runtime access error at {}", substrate_hash))
+					})?
+					.unwrap_or_default();
 				log::info!(
-					"Current epoch for block {} is {:?}",
+					"Randomness for block {}: {:?}",
 					substrate_hash,
-					current_epoch
+					H256(randomness)
 				);
-
-				let babe_config = runtime.configuration(substrate_hash).map_err(|_| {
-					internal_err(format!("Runtime access error at {}", substrate_hash))
-				})?;
 
 				let block = block_data_cache.current_block(substrate_hash).await;
 				let statuses = block_data_cache
@@ -153,7 +148,7 @@ where
 							full,
 							base_fee,
 							false,
-							H256(babe_config.randomness),
+							H256(randomness),
 						);
 
 						let substrate_hash = H256::from_slice(substrate_hash.as_ref());

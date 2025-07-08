@@ -113,6 +113,7 @@ pub trait EthCompatRuntimeApiCollection<Block: BlockT>:
 	sp_api::ApiExt<Block>
 	+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 	+ fp_rpc::EthereumRuntimeRPCApi<Block>
+	+ fp_rpc::RandomnessRuntimeApi<Block>
 {
 }
 
@@ -121,7 +122,8 @@ where
 	Block: BlockT,
 	Api: sp_api::ApiExt<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
-		+ fp_rpc::EthereumRuntimeRPCApi<Block>,
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ fp_rpc::RandomnessRuntimeApi<Block>,
 {
 }
 

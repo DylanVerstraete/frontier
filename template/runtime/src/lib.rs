@@ -1011,6 +1011,12 @@ impl_runtime_apis! {
 		}
 	}
 
+	impl fp_rpc::RandomnessRuntimeApi<Block> for Runtime {
+		fn randomness() -> Option<[u8; 32]> {
+			Some(H256::zero().0)
+		}
+	}
+
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
 		fn benchmark_metadata(extra: bool) -> (
