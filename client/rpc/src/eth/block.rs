@@ -26,6 +26,7 @@ use sc_transaction_pool::ChainApi;
 use sc_transaction_pool_api::InPoolTransaction;
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
+use sp_consensus_babe::BabeApi;
 use sp_core::hashing::keccak_256;
 use sp_runtime::traits::Block as BlockT;
 // Frontier
@@ -42,6 +43,7 @@ where
 	B: BlockT,
 	C: ProvideRuntimeApi<B>,
 	C::Api: EthereumRuntimeRPCApi<B>,
+	C::Api: BabeApi<B>,
 	C: HeaderBackend<B> + StorageProvider<B, BE> + 'static,
 	BE: Backend<B> + 'static,
 	A: ChainApi<Block = B>,
@@ -55,6 +57,11 @@ where
 			..
 		} = self.block_info_by_eth_block_hash(hash).await?;
 
+		let runtime = self.client.runtime_api();
+		let babe_config = runtime
+			.configuration(substrate_hash)
+			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?;
+
 		match (block, statuses) {
 			(Some(block), Some(statuses)) => {
 				let mut rich_block = rich_block_build(
@@ -64,6 +71,7 @@ where
 					full,
 					Some(base_fee),
 					false,
+					H256(babe_config.randomness),
 				);
 
 				let substrate_hash = H256::from_slice(substrate_hash.as_ref());
@@ -103,6 +111,11 @@ where
 					.expect_block_hash_from_id(&id)
 					.map_err(|_| internal_err(format!("Expect block number from id: {}", id)))?;
 
+				let runtime = self.client.runtime_api();
+				let babe_config = runtime.configuration(substrate_hash).map_err(|_| {
+					internal_err(format!("Runtime access error at {}", substrate_hash))
+				})?;
+
 				let block = block_data_cache.current_block(substrate_hash).await;
 				let statuses = block_data_cache
 					.current_transaction_statuses(substrate_hash)
@@ -120,6 +133,7 @@ where
 							full,
 							base_fee,
 							false,
+							H256(babe_config.randomness),
 						);
 
 						let substrate_hash = H256::from_slice(substrate_hash.as_ref());
@@ -175,6 +189,7 @@ where
 						full,
 						base_fee,
 						true,
+						H256::zero(),
 					))),
 					_ => Ok(None),
 				}
