@@ -58,6 +58,7 @@ where
 
 		let runtime = self.client.runtime_api();
 
+		log::info!("bbh: Going to access randomness api at {}", substrate_hash);
 		let randomness = runtime
 			.randomness(substrate_hash)
 			.map_err(|_| internal_err(format!("Runtime access error at {}", substrate_hash)))?
@@ -119,6 +120,7 @@ where
 
 				let runtime = self.client.runtime_api();
 
+				log::info!("bbn: Going to access randomness api at {}", substrate_hash);
 				let randomness = runtime
 					.randomness(substrate_hash)
 					.map_err(|_| {
