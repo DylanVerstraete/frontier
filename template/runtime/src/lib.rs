@@ -383,6 +383,14 @@ impl pallet_ethereum::Config for Runtime {
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self::Version>;
 	type PostLogContent = PostBlockAndTxnHashes;
 	type ExtraDataLength = ConstU32<30>;
+	type Randomness = Runtime;
+}
+
+impl fp_ethereum::RandomnessProvider for Runtime {
+	/// Returns a random value.
+	fn random_value() -> H256 {
+		H256::zero()
+	}
 }
 
 parameter_types! {

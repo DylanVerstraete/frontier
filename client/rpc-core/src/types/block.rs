@@ -103,6 +103,8 @@ pub struct Header {
 	pub nonce: Option<H64>,
 	/// Size in bytes
 	pub size: Option<U256>,
+	/// MixHash
+	pub mix_hash: H256,
 }
 
 /// Block representation with additional info.

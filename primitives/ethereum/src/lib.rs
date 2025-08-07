@@ -37,6 +37,11 @@ pub trait ValidatedTransaction {
 	) -> Result<(PostDispatchInfo, CallOrCreateInfo), DispatchErrorWithPostInfo>;
 }
 
+pub trait RandomnessProvider {
+	/// Returns a random value.
+	fn random_value() -> H256;
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct TransactionData {
 	pub action: TransactionAction,

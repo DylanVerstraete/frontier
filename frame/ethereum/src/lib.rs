@@ -63,7 +63,7 @@ use sp_version::RuntimeVersion;
 // Frontier
 use fp_consensus::{PostLog, PreLog, FRONTIER_ENGINE_ID};
 pub use fp_ethereum::TransactionData;
-use fp_ethereum::ValidatedTransaction as ValidatedTransactionT;
+use fp_ethereum::{RandomnessProvider, ValidatedTransaction as ValidatedTransactionT};
 use fp_evm::{
 	CallOrCreateInfo, CheckEvmTransaction, CheckEvmTransactionConfig, TransactionValidationError,
 };
@@ -183,6 +183,7 @@ pub use self::pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use fp_ethereum::RandomnessProvider;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
@@ -204,6 +205,8 @@ pub mod pallet {
 		type PostLogContent: Get<PostLogContent>;
 		/// The maximum length of the extra data in the Executed event.
 		type ExtraDataLength: Get<u32>;
+		/// RandomnessProvider for the block mix hash.
+		type Randomness: RandomnessProvider;
 	}
 
 	pub mod config_preludes {
@@ -222,6 +225,14 @@ pub mod pallet {
 			pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
 		}
 
+		pub struct Randomness {}
+
+		impl RandomnessProvider for Randomness {
+			fn random_value() -> H256 {
+				H256::zero()
+			}
+		}
+
 		#[register_default_impl(TestDefaultConfig)]
 		impl DefaultConfig for TestDefaultConfig {
 			#[inject_runtime_type]
@@ -229,6 +240,7 @@ pub mod pallet {
 			type StateRoot = IntermediateStateRoot<Self::Version>;
 			type PostLogContent = PostBlockAndTxnHashes;
 			type ExtraDataLength = ConstU32<30>;
+			type Randomness = Randomness;
 		}
 	}
 
@@ -476,7 +488,7 @@ impl<T: Config> Pallet<T> {
 			gas_used: cumulative_gas_used,
 			timestamp: T::Timestamp::now().unique_saturated_into(),
 			extra_data: Vec::new(),
-			mix_hash: H256::default(),
+			mix_hash: T::Randomness::random_value(),
 			nonce: H64::default(),
 		};
 		let block = ethereum::Block::new(partial_header, transactions.clone(), ommers);

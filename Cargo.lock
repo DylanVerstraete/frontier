@@ -3047,6 +3047,7 @@ name = "frontier-template-runtime"
 version = "0.0.0"
 dependencies = [
  "fp-account",
+ "fp-ethereum",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
